@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
@@ -38,7 +38,7 @@ EGO_VENDOR=(
 ARCHIVE_URI="https://${EGO_PN}/archive/${EGIT_COMMIT}.tar.gz -> ${P}.tar.gz"
 LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 
 PLOCALES="de el fr it ja nl ru sr sv tr"
 IUSE="+daemon nls test"
@@ -167,7 +167,7 @@ src_install() {
 
 	if use nls; then
 		for lingua in ${PLOCALES}; do
-			if use linguas_${lingua}; then
+			if has ${lingua} ${LINGUAS-${lingua}}; then
 				domo po/${lingua}.mo
 			fi
 		done

@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
@@ -13,7 +13,7 @@ if [[ ${PV} == "9999" ]]; then
 	inherit git-r3
 else
 	SRC_URI="https://github.com/${PN}/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
-	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
+	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~amd64-fbsd ~x86-fbsd"
 fi
 
 LICENSE="BSD-2"
@@ -74,11 +74,13 @@ src_compile() {
 	MAKE_ARGS="${MAKE_ARGS}
 		LIBNAME=$(get_libdir)
 		LIBEXECDIR=${EPREFIX}/$(get_libdir)/rc
+		MKBASHCOMP=yes
 		MKNET=$(usex newnet)
 		MKSELINUX=$(usex selinux)
 		MKAUDIT=$(usex audit)
 		MKPAM=$(usev pam)
-		MKSTATICLIBS=$(usex static-libs)"
+		MKSTATICLIBS=$(usex static-libs)
+		MKZSHCOMP=yes"
 
 	local brand="Unknown"
 	if use kernel_linux ; then
@@ -248,6 +250,9 @@ EOF
 			ewarn "if you do not want this to happen."
 		fi
 	fi
+
+	has_version ">=sys-apps/openrc-0.35" || add_boot_init cgroups sysinit
+
 }
 
 # >=OpenRC-0.11.3 requires udev-mount to be in the sysinit runlevel with udev.

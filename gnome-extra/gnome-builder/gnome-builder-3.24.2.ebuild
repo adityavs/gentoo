@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
@@ -16,7 +16,7 @@ HOMEPAGE="https://wiki.gnome.org/Apps/Builder"
 # FIXME: Review licenses at some point
 LICENSE="GPL-3+ GPL-2+ LGPL-3+ LGPL-2+ MIT CC-BY-SA-3.0 CC0-1.0"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="amd64 ~x86"
 IUSE="clang +git sysprof vala webkit"
 REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 
@@ -56,9 +56,7 @@ RDEPEND="
 	vala? ( $(vala_depend) )
 "
 # desktop-file-utils for desktop-file-validate check in configure for 3.22.4
-# mm-common due to not fully clean --disable-idemm behaviour, recheck on bump
 DEPEND="${RDEPEND}
-	dev-cpp/mm-common
 	dev-libs/appstream-glib
 	dev-util/desktop-file-utils
 	>=sys-devel/gettext-0.19.8

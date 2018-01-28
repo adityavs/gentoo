@@ -20,6 +20,7 @@ LICENSE="|| ( UoI-NCSA MIT )"
 SLOT="0"
 KEYWORDS=""
 IUSE="+libunwind +static-libs test"
+RESTRICT="!test? ( test )"
 
 RDEPEND="
 	libunwind? (
@@ -28,9 +29,9 @@ RDEPEND="
 			>=sys-libs/llvm-libunwind-3.9.0-r1[static-libs?,${MULTILIB_USEDEP}]
 		)
 	)"
-# LLVM 4 required for llvm-config --cmakedir
+# llvm-6 for new lit options
 DEPEND="${RDEPEND}
-	>=sys-devel/llvm-4
+	>=sys-devel/llvm-6
 	test? ( >=sys-devel/clang-3.9.0
 		~sys-libs/libcxx-${PV}[libcxxabi(-)]
 		$(python_gen_any_dep 'dev-python/lit[${PYTHON_USEDEP}]') )"
@@ -54,7 +55,7 @@ src_unpack() {
 	git-r3_fetch
 
 	git-r3_checkout https://llvm.org/git/libcxx.git \
-		"${WORKDIR}"/libcxx
+		"${WORKDIR}"/libcxx '' include utils/libcxx
 	git-r3_checkout
 }
 

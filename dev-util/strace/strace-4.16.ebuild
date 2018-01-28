@@ -11,7 +11,7 @@ if [[ ${PV} == "9999" ]] ; then
 	inherit git-2 autotools
 else
 	SRC_URI="mirror://sourceforge/${PN}/${P}.tar.xz"
-	KEYWORDS="alpha amd64 arm ~arm64 ~hppa ia64 ~m68k ~mips ppc ppc64 ~s390 ~sh sparc x86 ~amd64-linux ~arm-linux ~x86-linux"
+	KEYWORDS="alpha amd64 arm ~arm64 hppa ia64 ~m68k ~mips ppc ppc64 ~s390 ~sh sparc x86 ~amd64-linux ~arm-linux ~x86-linux"
 fi
 
 DESCRIPTION="A useful diagnostic, instructional, and debugging tool"
@@ -30,7 +30,9 @@ RDEPEND="!static? ( ${LIB_DEPEND//\[static-libs(+)]} )
 	perl? ( dev-lang/perl )"
 
 src_prepare() {
-	if epatch_user || [[ ! -e configure ]] ; then
+	epatch_user
+
+	if [[ ! -e configure ]] ; then
 		# git generation
 		./xlat/gen.sh || die
 		./generate_mpers_am.sh || die

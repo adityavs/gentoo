@@ -12,7 +12,7 @@ SRC_URI="mirror://sourceforge/${MY_PN}/${MY_P}.tgz"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="amd64 x86"
 
 IUSE="debug natevents snmp"
 
@@ -84,7 +84,7 @@ src_configure() {
 		--kdir="${KV_DIR}" \
 		--kver="${KV_FULL}" \
 		$(use debug && echo '--enable-debugfs') \
-		$(use_enable natevents) \
+		$(use natevents && echo '--enable-natevents') \
 		$(use snmp && echo '--enable-snmp-rules' || echo '--disable-snmp-agent')
 }
 

@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
@@ -28,7 +28,7 @@ DEPEND="${RDEPEND}
 	cpu_flags_x86_mmx? ( dev-lang/nasm )"
 
 src_prepare() {
-	epatch \
+	epatch -p1 \
 		"${FILESDIR}"/${PN}-3.96-ccc.patch \
 		"${FILESDIR}"/${PN}-3.98-gtk-path.patch \
 		"${FILESDIR}"/${PN}-3.99.5-tinfo.patch \
@@ -73,7 +73,8 @@ multilib_src_install_all() {
 	dobin misc/mlame
 
 	dodoc API ChangeLog HACKING README STYLEGUIDE TODO USAGE
-	dohtml misc/lameGUI.html Dll/LameDLLInterface.htm
+	docinto html
+	dodoc misc/lameGUI.html Dll/LameDLLInterface.htm
 
 	find "${ED}" -name '*.la' -exec rm -f {} +
 }

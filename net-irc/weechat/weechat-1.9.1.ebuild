@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
@@ -11,7 +11,7 @@ if [[ ${PV} == "9999" ]] ; then
 	EGIT_REPO_URI="https://github.com/weechat/weechat.git"
 else
 	SRC_URI="https://weechat.org/files/src/${P}.tar.xz"
-	KEYWORDS="amd64 x86"
+	KEYWORDS="amd64 x86 ~x64-macos"
 fi
 
 DESCRIPTION="Portable and multi-interface IRC client"
@@ -25,7 +25,7 @@ PLUGINS="+alias +buflist +charset +exec +fifo +logger +relay +scripts +spell +tr
 # dev-lang/v8 was dropped from Gentoo so we can't enable javascript support
 SCRIPT_LANGS="guile lua +perl +python ruby tcl"
 LANGS=" cs de es fr hu it ja pl pt pt_BR ru tr"
-IUSE="doc nls +ssl test ${LANGS// / linguas_} ${SCRIPT_LANGS} ${PLUGINS} ${INTERFACES} ${NETWORKS}"
+IUSE="doc nls +ssl test ${SCRIPT_LANGS} ${PLUGINS} ${INTERFACES} ${NETWORKS}"
 REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
 
 RDEPEND="
@@ -65,7 +65,7 @@ pkg_setup() {
 }
 
 src_prepare() {
-	default
+	cmake-utils_src_prepare
 
 	# fix libdir placement
 	sed -i \
@@ -76,7 +76,7 @@ src_prepare() {
 	# install only required translations
 	local i
 	for i in ${LANGS} ; do
-		if ! use linguas_${i} ; then
+		if ! has ${i} ${LINGUAS-${i}} ; then
 			sed -i \
 				-e "/${i}.po/d" \
 				po/CMakeLists.txt || die
@@ -86,7 +86,7 @@ src_prepare() {
 	# install only required documentation ; en always
 	for i in $(grep add_subdirectory doc/CMakeLists.txt \
 			| sed -e 's/.*add_subdirectory(\(..\)).*/\1/' -e '/en/d'); do
-		if ! use linguas_${i} ; then
+		if ! has ${i} ${LINGUAS-${i}} ; then
 			sed -i \
 				-e '/add_subdirectory('${i}')/d' \
 				doc/CMakeLists.txt || die
@@ -95,6 +95,15 @@ src_prepare() {
 
 	# install docs in correct directory
 	sed -i "s#\${SHAREDIR}/doc/\${PROJECT_NAME}#\0-${PV}/html#" doc/*/CMakeLists.txt || die
+
+	if [[ ${CHOST} == *-darwin* ]]; then
+		# fix linking error on Darwin
+		sed -i "s/+ get_config_var('LINKFORSHARED')//" \
+			cmake/FindPython.cmake || die
+		# allow to find the plugins by default
+		sed -i 's/".so,.dll"/".bundle,.so,.dll"/' \
+			src/core/wee-config.c || die
+	fi
 }
 
 src_configure() {

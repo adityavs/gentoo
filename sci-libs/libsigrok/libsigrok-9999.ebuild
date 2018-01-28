@@ -3,7 +3,7 @@
 
 EAPI="6"
 
-PYTHON_COMPAT=( python{2_7,3_{4,5}} )
+PYTHON_COMPAT=( python{2_7,3_{4,5,6}} )
 
 inherit eutils python-single-r1 java-pkg-opt-2
 
@@ -19,7 +19,7 @@ DESCRIPTION="basic hardware drivers for logic analyzers and input/output file fo
 HOMEPAGE="http://sigrok.org/wiki/Libsigrok"
 
 LICENSE="GPL-3"
-SLOT="0"
+SLOT="0/9999"
 IUSE="cxx ftdi java parport python serial static-libs test usb"
 REQUIRED_USE="java? ( cxx ) python? ( cxx ${PYTHON_REQUIRED_USE} )"
 
@@ -43,6 +43,8 @@ DEPEND="${LIB_DEPEND//\[static-libs(+)]}
 		>=virtual/jdk-1.4
 	)
 	python? (
+		dev-python/setuptools[${PYTHON_USEDEP}]
+		dev-python/numpy[${PYTHON_USEDEP}]
 		>=dev-lang/swig-3.0.6
 	)
 	virtual/pkgconfig"

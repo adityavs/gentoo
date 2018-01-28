@@ -14,7 +14,7 @@ else
 		https://dev.gentoo.org/~mattst88/distfiles/${P}.tar.bz2
 		https://dev.gentoo.org/~zerochaos/distfiles/${P}.tar.bz2
 		https://dev.gentoo.org/~dolsen/releases/catalyst/${P}.tar.bz2"
-	KEYWORDS="~alpha amd64 arm ~arm64 ~hppa ~ia64 ~mips ppc ~ppc64 ~s390 ~sh ~sparc x86 ~x86-fbsd"
+	KEYWORDS="~alpha amd64 arm arm64 hppa ia64 ~mips ppc ppc64 s390 sh sparc x86 ~x86-fbsd"
 fi
 
 PYTHON_COMPAT=( python2_7 )
@@ -36,9 +36,9 @@ RDEPEND="
 	app-arch/lbzip2
 	app-crypt/shash
 	app-arch/tar[xattr]
+	sys-fs/dosfstools
 	virtual/cdrtools
 	amd64? ( >=sys-boot/syslinux-3.72 )
-	ia64? ( sys-fs/dosfstools )
 	x86? ( >=sys-boot/syslinux-3.72 )
 	ccache? ( dev-util/ccache )
 	kernel_linux? ( app-misc/zisofs-tools >=sys-fs/squashfs-tools-2.1 )

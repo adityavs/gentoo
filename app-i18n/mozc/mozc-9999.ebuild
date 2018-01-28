@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
@@ -15,9 +15,8 @@ else
 	MOZC_GIT_REVISION=""
 	JAPANESE_USAGE_DICTIONARY_GIT_REVISION=""
 	JAPANESE_USAGE_DICTIONARY_DATE=""
+	FCITX_PATCH_VERSION=""
 fi
-
-FCITX_PATCH_VERSION="2.18.2612.102.1"
 
 DESCRIPTION="Mozc - Japanese input method editor"
 HOMEPAGE="https://github.com/google/mozc"
@@ -25,9 +24,9 @@ if [[ "${PV}" == "9999" ]]; then
 	SRC_URI=""
 else
 	SRC_URI="https://github.com/google/${PN}/archive/${MOZC_GIT_REVISION}.tar.gz -> ${P}.tar.gz
-		https://github.com/hiroyuki-komatsu/japanese-usage-dictionary/archive/${JAPANESE_USAGE_DICTIONARY_GIT_REVISION}.tar.gz -> japanese-usage-dictionary-${JAPANESE_USAGE_DICTIONARY_DATE}.tar.gz"
+		https://github.com/hiroyuki-komatsu/japanese-usage-dictionary/archive/${JAPANESE_USAGE_DICTIONARY_GIT_REVISION}.tar.gz -> japanese-usage-dictionary-${JAPANESE_USAGE_DICTIONARY_DATE}.tar.gz
+		fcitx4? ( https://download.fcitx-im.org/fcitx-mozc/fcitx-mozc-${FCITX_PATCH_VERSION}.patch )"
 fi
-SRC_URI+=" fcitx4? ( https://download.fcitx-im.org/fcitx-mozc/fcitx-mozc-${FCITX_PATCH_VERSION}.patch )"
 
 # Mozc: BSD
 # src/data/dictionary_oss: ipadic, public-domain
@@ -39,7 +38,7 @@ KEYWORDS=""
 IUSE="debug emacs fcitx4 +gui +handwriting-tegaki handwriting-tomoe ibus renderer test"
 REQUIRED_USE="|| ( emacs fcitx4 ibus ) gui? ( ^^ ( handwriting-tegaki handwriting-tomoe ) ) !gui? ( !handwriting-tegaki !handwriting-tomoe )"
 
-RDEPEND="dev-libs/protobuf:=
+RDEPEND=">=dev-libs/protobuf-3.0.0:=
 	emacs? ( virtual/emacs )
 	fcitx4? ( app-i18n/fcitx:4 )
 	gui? (
@@ -83,6 +82,12 @@ execute() {
 src_unpack() {
 	if [[ "${PV}" == "9999" ]]; then
 		git-r3_src_unpack
+
+		if use fcitx4; then
+			local EGIT_SUBMODULES=()
+			git-r3_fetch https://github.com/fcitx/mozc refs/heads/fcitx
+			git-r3_checkout https://github.com/fcitx/mozc "${WORKDIR}/fcitx-mozc"
+		fi
 	else
 		unpack ${P}.tar.gz
 		mv mozc-${MOZC_GIT_REVISION} ${P} || die
@@ -94,11 +99,16 @@ src_unpack() {
 
 src_prepare() {
 	eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-system_libraries.patch"
+	eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-gcc-5.patch"
 	eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-tests_build.patch"
 	eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-tests_skipping.patch"
 
 	if use fcitx4; then
-		eapply -p2 "${DISTDIR}/fcitx-mozc-${FCITX_PATCH_VERSION}.patch"
+		if [[ "${PV}" == "9999" ]]; then
+			cp -pr "${WORKDIR}/fcitx-mozc/src/unix/fcitx" unix || die
+		else
+			eapply -p2 "${DISTDIR}/fcitx-mozc-${FCITX_PATCH_VERSION}.patch"
+		fi
 	fi
 
 	eapply_user
@@ -156,9 +166,12 @@ src_configure() {
 		gyp_arguments+=(-D compiler_host=unknown -D compiler_target=unknown)
 	fi
 
+	gyp_arguments+=(-D use_fcitx=$(usex fcitx4 YES NO))
+	gyp_arguments+=(-D use_libgtest=$(usex test 1 0))
 	gyp_arguments+=(-D use_libibus=$(usex ibus 1 0))
+	gyp_arguments+=(-D use_libjsoncpp=$(usex test 1 0))
 	gyp_arguments+=(-D use_libprotobuf=1)
-	gyp_arguments+=(-D use_libzinnia=1)
+	gyp_arguments+=(-D use_libzinnia=$(usex gui 1 0))
 	gyp_arguments+=(-D enable_gtk_renderer=$(usex renderer 1 0))
 
 	gyp_arguments+=(-D server_dir="${EPREFIX}/usr/libexec/mozc")

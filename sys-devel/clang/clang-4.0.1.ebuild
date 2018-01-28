@@ -26,8 +26,8 @@ LLVM_TARGET_USEDEPS=${ALL_LLVM_TARGETS[@]/%/?}
 
 LICENSE="UoI-NCSA"
 SLOT="$(get_major_version)"
-KEYWORDS="~amd64 ~arm64 ~x86"
-IUSE="debug default-compiler-rt default-libcxx +doc +static-analyzer
+KEYWORDS="amd64 ~arm64 x86"
+IUSE="debug default-compiler-rt default-libcxx doc +static-analyzer
 	test xml elibc_musl kernel_FreeBSD ${ALL_LLVM_TARGETS[*]}"
 
 RDEPEND="
@@ -38,7 +38,6 @@ RDEPEND="
 # configparser-3.2 breaks the build (3.3 or none at all are fine)
 DEPEND="${RDEPEND}
 	doc? ( dev-python/sphinx )
-	test? ( ~dev-python/lit-${PV}[${PYTHON_USEDEP}] )
 	xml? ( virtual/pkgconfig )
 	!!<dev-python/configparser-3.3.0.2
 	${PYTHON_DEPS}"
@@ -90,7 +89,7 @@ src_unpack() {
 
 src_prepare() {
 	# fix finding compiler-rt libs
-	eapply "${FILESDIR}"/5.0.0/0001-Driver-Use-arch-type-to-find-compiler-rt-libraries-o.patch
+	eapply "${FILESDIR}"/5.0.1/0001-Driver-Use-arch-type-to-find-compiler-rt-libraries-o.patch
 
 	# fix stand-alone doc build
 	eapply "${FILESDIR}"/4.0.1/0007-cmake-Support-stand-alone-Sphinx-doxygen-doc-build.patch
@@ -102,11 +101,11 @@ src_prepare() {
 	cd tools/extra || die
 	# fix stand-alone test build for extra tools
 	eapply "${FILESDIR}"/4.0.1/extra/0001-test-Fix-test-dependencies-when-using-installed-tool.patch
-	eapply "${FILESDIR}"/5.0.0/extra/0002-test-Fix-clang-library-dir-in-LD_LIBRARY_PATH-For-st.patch
+	eapply "${FILESDIR}"/5.0.1/extra/0002-test-Fix-clang-library-dir-in-LD_LIBRARY_PATH-For-st.patch
 	cd - >/dev/null || die
 
 	# User patches
-	eapply_user
+	cmake-utils_src_prepare
 }
 
 multilib_src_configure() {
@@ -142,7 +141,6 @@ multilib_src_configure() {
 	)
 	use test && mycmakeargs+=(
 		-DLLVM_MAIN_SRC_DIR="${WORKDIR}/llvm"
-		-DLIT_COMMAND="${EPREFIX}/usr/bin/lit"
 	)
 
 	if multilib_is_native_abi; then

@@ -6,6 +6,7 @@
 # qt@gentoo.org
 # @AUTHOR:
 # Davide Pesavento <pesa@gentoo.org>
+# @SUPPORTED_EAPIS: 6
 # @BLURB: Eclass for Qt5 split ebuilds.
 # @DESCRIPTION:
 # This eclass contains various functions that are used when building Qt5.
@@ -21,9 +22,10 @@ case ${EAPI} in
 esac
 
 # @ECLASS-VARIABLE: QT5_MODULE
+# @PRE_INHERIT
 # @DESCRIPTION:
 # The upstream name of the module this package belongs to. Used for
-# SRC_URI and EGIT_REPO_URI. Must be defined before inheriting the eclass.
+# SRC_URI and EGIT_REPO_URI. Must be set before inheriting the eclass.
 : ${QT5_MODULE:=${PN}}
 
 # @ECLASS-VARIABLE: QT5_TARGET_SUBDIRS
@@ -50,18 +52,12 @@ esac
 inherit estack flag-o-matic ltprune toolchain-funcs versionator virtualx
 
 HOMEPAGE="https://www.qt.io/"
+LICENSE="|| ( GPL-2 GPL-3 LGPL-3 ) FDL-1.3"
+SLOT=5/$(get_version_component_range 1-2)
 
 QT5_MINOR_VERSION=$(get_version_component_range 2)
 QT5_PATCH_VERSION=$(get_version_component_range 3)
 readonly QT5_MINOR_VERSION QT5_PATCH_VERSION
-
-if [[ ${QT5_MINOR_VERSION} -ge 7 ]]; then
-	LICENSE="|| ( GPL-2 GPL-3 LGPL-3 ) FDL-1.3"
-else
-	LICENSE="|| ( LGPL-2.1 LGPL-3 ) FDL-1.3"
-fi
-
-SLOT=5/$(get_version_component_range 1-2)
 
 case ${PV} in
 	5.9999)
@@ -69,7 +65,7 @@ case ${PV} in
 		QT5_BUILD_TYPE="live"
 		EGIT_BRANCH="dev"
 		;;
-	5.?.9999)
+	5.?.9999|5.??.9999|5.???.9999)
 		# git stable branch
 		QT5_BUILD_TYPE="live"
 		EGIT_BRANCH=${PV%.9999}
@@ -77,14 +73,26 @@ case ${PV} in
 	*_alpha*|*_beta*|*_rc*)
 		# development release
 		QT5_BUILD_TYPE="release"
-		MY_P=${QT5_MODULE}-opensource-src-${PV/_/-}
+
+		if [[ ${QT5_MINOR_VERSION} -ge 10 ]]; then
+			MY_P=${QT5_MODULE}-everywhere-src-${PV/_/-}
+		else
+			MY_P=${QT5_MODULE}-opensource-src-${PV/_/-}
+		fi
+
 		SRC_URI="https://download.qt.io/development_releases/qt/${PV%.*}/${PV/_/-}/submodules/${MY_P}.tar.xz"
 		S=${WORKDIR}/${MY_P}
 		;;
 	*)
 		# official stable release
 		QT5_BUILD_TYPE="release"
-		MY_P=${QT5_MODULE}-opensource-src-${PV}
+
+		if [[ ${QT5_MINOR_VERSION} -ge 10 ]]; then
+			MY_P=${QT5_MODULE}-everywhere-src-${PV}
+		else
+			MY_P=${QT5_MODULE}-opensource-src-${PV}
+		fi
+
 		SRC_URI="https://download.qt.io/official_releases/qt/${PV%.*}/${PV}/submodules/${MY_P}.tar.xz"
 		S=${WORKDIR}/${MY_P}
 		;;
@@ -92,13 +100,13 @@ esac
 readonly QT5_BUILD_TYPE
 
 EGIT_REPO_URI=(
-	"git://code.qt.io/qt/${QT5_MODULE}.git"
-	"https://code.qt.io/git/qt/${QT5_MODULE}.git"
-	"https://github.com/qtproject/${QT5_MODULE}.git"
+	"https://code.qt.io/qt/${QT5_MODULE}.git"
+	"https://github.com/qt/${QT5_MODULE}.git"
 )
 [[ ${QT5_BUILD_TYPE} == live ]] && inherit git-r3
 
 # @ECLASS-VARIABLE: QT5_BUILD_DIR
+# @OUTPUT_VARIABLE
 # @DESCRIPTION:
 # Build directory for out-of-source builds.
 case ${QT5_BUILD_TYPE} in
@@ -115,7 +123,7 @@ DEPEND="
 	dev-lang/perl
 	virtual/pkgconfig
 "
-if [[ ${PN} != qttest ]]; then
+if [[ (${PN} != qttest && ${PN} != qtwebkit) || (${PN} == qtwebkit && ${QT5_MINOR_VERSION} -lt 9) ]]; then
 	DEPEND+=" test? ( ~dev-qt/qttest-${PV} )"
 fi
 RDEPEND="
@@ -132,10 +140,7 @@ EXPORT_FUNCTIONS src_unpack src_prepare src_configure src_compile src_install sr
 # Unpacks the sources.
 qt5-build_src_unpack() {
 	if tc-is-gcc; then
-		local min_gcc4_minor_version=5
-		if [[ ${QT5_MINOR_VERSION} -ge 7 || ${PN} == qtwebengine ]]; then
-			min_gcc4_minor_version=7
-		fi
+		local min_gcc4_minor_version=7
 		if [[ $(gcc-major-version) -lt 4 ]] || \
 		   [[ $(gcc-major-version) -eq 4 && $(gcc-minor-version) -lt ${min_gcc4_minor_version} ]]; then
 			eerror "GCC version 4.${min_gcc4_minor_version} or later is required to build this package"
@@ -172,8 +177,14 @@ qt5-build_src_prepare() {
 		qt5_symlink_tools_to_build_dir
 
 		# Avoid unnecessary qmake recompilations
-		sed -i -re "s|^if true;.*(\[ '\!').*(\"\\\$outpath/bin/qmake\".*)|if \1 -e \2 then|" \
-			configure || die "sed failed (skip qmake bootstrap)"
+		if [[ ${QT5_MINOR_VERSION} -ge 8 ]]; then
+			sed -i -e "/Creating qmake/i if [ '!' -e \"\$outpath/bin/qmake\" ]; then" \
+				-e '/echo "Done."/a fi' \
+				configure || die "sed failed (skip qmake bootstrap)"
+		else
+			sed -i -re "s|^if true;.*(\[ '\!').*(\"\\\$outpath/bin/qmake\".*)|if \1 -e \2 then|" \
+				configure || die "sed failed (skip qmake bootstrap)"
+		fi
 
 		# Respect CC, CXX, *FLAGS, MAKEOPTS and EXTRA_EMAKE when bootstrapping qmake
 		sed -i -e "/outpath\/qmake\".*\"\$MAKE\")/ s:): \
@@ -188,9 +199,11 @@ qt5-build_src_prepare() {
 		sed -i -e "/^QMAKE_CONF_COMPILER=/ s:=.*:=\"$(tc-getCXX)\":" \
 			configure || die "sed failed (QMAKE_CONF_COMPILER)"
 
-		# Respect toolchain and flags in config.tests
-		find config.tests/unix -name '*.test' -type f -execdir \
-			sed -i -e 's/-nocache //' '{}' + || die
+		if [[ ${QT5_MINOR_VERSION} -le 7 ]]; then
+			# Respect toolchain and flags in config.tests
+			find config.tests/unix -name '*.test' -type f -execdir \
+				sed -i -e 's/-nocache //' '{}' + || die
+		fi
 
 		# Don't inject -msse/-mavx/... into CXXFLAGS when detecting
 		# compiler support for extended instruction sets (bug 552942)
@@ -200,6 +213,11 @@ qt5-build_src_prepare() {
 		# Don't add -O3 to CXXFLAGS (bug 549140)
 		sed -i -e '/CONFIG\s*+=/ s/optimize_full//' \
 			src/{corelib/corelib,gui/gui}.pro || die "sed failed (optimize_full)"
+
+		# Respect build variables in configure tests (bug #639494)
+		if [[ ${QT5_MINOR_VERSION} -ge 9 ]]; then
+			sed -i -e "s|\"\$outpath/bin/qmake\" \"\$relpathMangled\" -- \"\$@\"|& $(qt5_qmake_args) |" configure || die
+		fi
 	fi
 
 	default
@@ -261,21 +279,9 @@ qt5-build_src_install() {
 	if [[ ${PN} == qtcore ]]; then
 		pushd "${QT5_BUILD_DIR}" >/dev/null || die
 
-		local qmake_install_target=install_qmake
-		if [[ ${QT5_MINOR_VERSION} -ge 7 ]]; then
-			# qmake/qmake-aux.pro
-			qmake_install_target=sub-qmake-qmake-aux-pro-install_subtargets
-		fi
-
-		local global_docs_install_target=
-		if [[ ${QT5_MINOR_VERSION} -le 6 && ${QT5_PATCH_VERSION} -le 2 ]]; then
-			global_docs_install_target=install_global_docs
-		fi
-
 		set -- emake INSTALL_ROOT="${D}" \
-			${qmake_install_target} \
-			install_{syncqt,mkspecs} \
-			${global_docs_install_target}
+			sub-qmake-qmake-aux-pro-install_subtargets \
+			install_{syncqt,mkspecs}
 
 		einfo "Running $*"
 		"$@"
@@ -367,6 +373,29 @@ qt_use_compile_test() {
 	if ! use "$1"; then
 		mkdir -p "${QT5_BUILD_DIR}" || die
 		echo "CONFIG += done_config_${2:-$1}" >> "${QT5_BUILD_DIR}"/.qmake.cache || die
+	fi
+}
+
+# @FUNCTION: qt_use_disable_config
+# @USAGE: <flag> <config> <files...>
+# @DESCRIPTION:
+# <flag> is the name of a flag in IUSE.
+# <config> is the (lowercase) name of a Qt5 config entry.
+# <files...> is a list of one or more qmake project files.
+#
+# This function patches <files> to treat <config> as disabled
+# when <flag> is disabled, otherwise it does nothing.
+# This can be useful to avoid an automagic dependency when the config entry
+# is enabled on the system but the corresponding USE flag is disabled.
+qt_use_disable_config() {
+	[[ $# -ge 3 ]] || die "${FUNCNAME}() requires at least three arguments"
+
+	local flag=$1
+	local config=$2
+	shift 2
+
+	if ! use "${flag}"; then
+		echo "$@" | xargs sed -i -e "s/qtConfig(${config})/false/g" || die
 	fi
 }
 
@@ -489,6 +518,11 @@ qt5_base_configure() {
 	tc-export AR CC CXX OBJDUMP RANLIB STRIP
 	export LD="$(tc-getCXX)"
 
+	# bug 633838
+	if [[ ${QT5_MINOR_VERSION} -ge 9 ]]; then
+		unset QMAKESPEC XQMAKESPEC QMAKEPATH QMAKEFEATURES
+	fi
+
 	# configure arguments
 	local conf=(
 		# installation paths
@@ -538,7 +572,7 @@ qt5_base_configure() {
 		-no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds
 
 		# ensure the QML debugging support (qmltooling) is built in qtdeclarative
-		-qml-debug
+		$([[ ${QT5_MINOR_VERSION} -lt 11 ]] && echo -qml-debug)
 
 		# MIPS DSP instruction set extensions
 		$(is-flagq -mno-dsp   && echo -no-mips_dsp)
@@ -550,7 +584,7 @@ qt5_base_configure() {
 		# prefer system libraries (only common hard deps here)
 		-system-zlib
 		-system-pcre
-		$([[ ${QT5_MINOR_VERSION} -ge 7 ]] && echo -system-doubleconversion)
+		-system-doubleconversion
 
 		# disable everything to prevent automagic deps (part 1)
 		-no-mtdev
@@ -568,8 +602,8 @@ qt5_base_configure() {
 		-glib
 
 		# disable everything to prevent automagic deps (part 2)
-		-no-pulseaudio -no-alsa
-		$([[ ${QT5_MINOR_VERSION} -ge 7 ]] && echo -no-gtk || echo -no-gtkstyle)
+		-no-gtk
+		$([[ ${QT5_MINOR_VERSION} -lt 8 ]] && echo -no-pulseaudio -no-alsa)
 
 		# exclude examples and tests from default build
 		-nomake examples
@@ -583,7 +617,8 @@ qt5_base_configure() {
 		-verbose
 
 		# always enable iconv support
-		-iconv
+		# since 5.8 this is handled in qtcore
+		$([[ ${QT5_MINOR_VERSION} -lt 8 ]] && echo -iconv)
 
 		# disable everything to prevent automagic deps (part 3)
 		-no-cups -no-evdev -no-tslib -no-icu -no-fontconfig -no-dbus
@@ -602,15 +637,16 @@ qt5_base_configure() {
 		# supported; see also https://bugreports.qt.io/browse/QTBUG-36129
 		#-reduce-relocations
 
-		# let configure automatically detect if GNU gold is available
-		#-use-gold-linker
+		# use the system linker (gold will be selected automagically otherwise)
+		$(tc-ld-is-gold && echo -use-gold-linker || echo -no-use-gold-linker)
 
 		# disable all platform plugins by default, override in qtgui
 		-no-xcb -no-eglfs -no-kms -no-gbm -no-directfb -no-linuxfb -no-mirclient
 
 		# disable undocumented X11-related flags, override in qtgui
 		# (not shown in ./configure -help output)
-		-no-xkb -no-xrender
+		-no-xkb
+		$([[ ${QT5_MINOR_VERSION} -lt 8 ]] && echo -no-xrender)
 
 		# disable obsolete/unused X11-related flags
 		$([[ ${QT5_MINOR_VERSION} -lt 8 ]] && echo -no-mitshm -no-xcursor -no-xfixes -no-xrandr -no-xshape -no-xsync)
@@ -630,7 +666,7 @@ qt5_base_configure() {
 		-no-libinput
 
 		# disable gstreamer by default, override in qtmultimedia
-		-no-gstreamer
+		$([[ ${QT5_MINOR_VERSION} -lt 8 ]] && echo -no-gstreamer)
 
 		# respect system proxies by default: it's the most natural
 		# setting, and it'll become the new upstream default in 5.8
@@ -648,7 +684,41 @@ qt5_base_configure() {
 	einfo "Configuring with: ${conf[@]}"
 	"${S}"/configure "${conf[@]}" || die "configure failed"
 
+	if [[ ${QT5_MINOR_VERSION} -ge 8 ]]; then
+		# a forwarding header is no longer created since 5.8, causing the system
+		# config to always be used. bug 599636
+		cp src/corelib/global/qconfig.h include/QtCore/ || die
+	fi
+
 	popd >/dev/null || die
+
+}
+
+# @FUNCTION: qt5_qmake_args
+# @INTERNAL
+# @DESCRIPTION:
+# Helper function to get the various toolchain-related variables.
+qt5_qmake_args() {
+	echo \
+		QMAKE_AR=\"$(tc-getAR)\" \
+		QMAKE_CC=\"$(tc-getCC)\" \
+		QMAKE_LINK_C=\"$(tc-getCC)\" \
+		QMAKE_LINK_C_SHLIB=\"$(tc-getCC)\" \
+		QMAKE_CXX=\"$(tc-getCXX)\" \
+		QMAKE_LINK=\"$(tc-getCXX)\" \
+		QMAKE_LINK_SHLIB=\"$(tc-getCXX)\" \
+		QMAKE_OBJCOPY=\"$(tc-getOBJCOPY)\" \
+		QMAKE_RANLIB= \
+		QMAKE_STRIP=\"$(tc-getSTRIP)\" \
+		QMAKE_CFLAGS=\"${CFLAGS}\" \
+		QMAKE_CFLAGS_RELEASE= \
+		QMAKE_CFLAGS_DEBUG= \
+		QMAKE_CXXFLAGS=\"${CXXFLAGS}\" \
+		QMAKE_CXXFLAGS_RELEASE= \
+		QMAKE_CXXFLAGS_DEBUG= \
+		QMAKE_LFLAGS=\"${LDFLAGS}\" \
+		QMAKE_LFLAGS_RELEASE= \
+		QMAKE_LFLAGS_DEBUG=
 }
 
 # @FUNCTION: qt5_qmake

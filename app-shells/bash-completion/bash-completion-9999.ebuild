@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
@@ -16,9 +16,11 @@ SLOT="0"
 KEYWORDS=""
 IUSE="test"
 
+# completion collision with net-fs/mc
 RDEPEND=">=app-shells/bash-4.3_p30-r1
 	sys-apps/miscfiles
-	!app-eselect/eselect-bashcomp"
+	!app-eselect/eselect-bashcomp
+	!!net-fs/mc"
 DEPEND="app-arch/xz-utils
 	test? (
 		${RDEPEND}
@@ -45,6 +47,9 @@ STRIP_COMPLETIONS=(
 
 	# Installed by sys-apps/util-linux-2.28
 	mount umount mount.linux umount.linux
+
+	# Deprecated in favor of sys-apps/util-linux-2.31
+	_rfkill
 )
 
 src_unpack() {

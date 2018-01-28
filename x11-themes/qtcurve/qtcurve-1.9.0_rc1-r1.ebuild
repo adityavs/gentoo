@@ -15,7 +15,7 @@ IUSE="+X gtk nls plasma qt4 +qt5 test"
 
 if [[ "${PV}" != 9999 ]] ; then
 	SRC_URI="https://github.com/KDE/qtcurve/archive/${PV/_/-}.tar.gz -> ${P}.tar.gz"
-	KEYWORDS="~alpha amd64 ~hppa ~ppc ~ppc64 ~sparc x86"
+	KEYWORDS="alpha amd64 ~hppa ppc ppc64 ~sparc x86"
 	S="${WORKDIR}/${P/_/-}"
 fi
 
@@ -40,6 +40,7 @@ COMMON_DEPEND="
 		$(add_qt_dep qtx11extras)
 	)
 	plasma? (
+		$(add_frameworks_dep frameworkintegration)
 		$(add_frameworks_dep karchive)
 		$(add_frameworks_dep kcompletion)
 		$(add_frameworks_dep kconfig)

@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="5"
@@ -9,13 +9,13 @@ if [[ ${PV} == "9999" ]] ; then
 	inherit git-r3
 else
 	SRC_URI="https://github.com/zfsonlinux/zfs/releases/download/zfs-${PV}/${P}.tar.gz
-		https://dev.gentoo.org/~ryao/dist/${P}-patches-p${PR#r}.tar.xz"
+		https://dev.gentoo.org/~ryao/dist/${P}-patches-p1.tar.xz"
 	KEYWORDS="~amd64 ~arm ~ppc ~ppc64"
 fi
 
 inherit flag-o-matic linux-info linux-mod autotools-utils
 
-DESCRIPTION="The Solaris Porting Layer is a Linux kernel module which provides many of the Solaris kernel APIs"
+DESCRIPTION="The Solaris Porting Layer provides many of the Solaris kernel APIs"
 HOMEPAGE="http://zfsonlinux.org/"
 
 LICENSE="GPL-2"
@@ -23,7 +23,8 @@ SLOT="0"
 IUSE="custom-cflags debug"
 RESTRICT="debug? ( strip ) test"
 
-COMMON_DEPEND="dev-lang/perl
+COMMON_DEPEND="
+	dev-lang/perl
 	virtual/awk"
 
 DEPEND="${COMMON_DEPEND}"
@@ -39,6 +40,7 @@ pkg_setup() {
 	linux-info_pkg_setup
 	CONFIG_CHECK="
 		!DEBUG_LOCK_ALLOC
+		!CONFIG_REISER4_FS
 		!GRKERNSEC_RANDSTRUCT
 		KALLSYMS
 		MODULES

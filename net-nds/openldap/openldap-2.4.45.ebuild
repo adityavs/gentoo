@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="5"
@@ -18,7 +18,7 @@ SRC_URI="ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release/${P}.tgz
 
 LICENSE="OPENLDAP GPL-2"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~ppc-aix ~amd64-fbsd ~sparc-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~x86-solaris"
+KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~ppc-aix ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~x86-solaris"
 
 IUSE_DAEMON="crypt samba slp tcpd experimental minimal"
 IUSE_BACKEND="+berkdb"
@@ -269,7 +269,7 @@ openldap_upgrade_howto() {
 	d="$(date -u +%s)"
 	l="/root/ldapdump.${d}"
 	i="${l}.raw"
-	eerror " 1. /etc/init.d/slurpd stop ; /etc/init.d/slapd stop"
+	eerror " 1. /etc/init.d/slapd stop"
 	eerror " 2. slapcat -l ${i}"
 	eerror " 3. egrep -v '^(entry|context)CSN:' <${i} >${l}"
 	eerror " 4. mv /var/lib/openldap-data/ /var/lib/openldap-data-backup/"
@@ -712,7 +712,6 @@ multilib_src_test() {
 multilib_src_install() {
 	local lt="${BUILD_DIR}/libtool"
 	emake DESTDIR="${D}" SHELL="${EPREFIX}"/bin/bash install
-	use static-libs || prune_libtool_files --all
 
 	if ! use minimal && multilib_is_native_abi; then
 		# openldap modules go here
@@ -825,6 +824,8 @@ multilib_src_install() {
 		dosbin "${S}"/contrib/slapd-tools/statslog
 		newdoc "${S}"/contrib/slapd-tools/README README.statslog
 	fi
+
+	use static-libs || prune_libtool_files --all
 }
 
 multilib_src_install_all() {

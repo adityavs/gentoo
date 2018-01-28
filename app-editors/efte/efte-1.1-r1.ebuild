@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
@@ -6,7 +6,7 @@ EAPI=5
 inherit eutils cmake-utils fdo-mime
 
 DESCRIPTION="A fast text editor supporting folding, syntax highlighting, etc."
-HOMEPAGE="http://efte.sourceforge.net"
+HOMEPAGE="https://github.com/lanurmi/efte"
 SRC_URI="mirror://sourceforge/${PN}/${P}.tar.bz2"
 
 LICENSE="|| ( GPL-2 Artistic )"
@@ -14,7 +14,7 @@ SLOT="0"
 KEYWORDS="amd64 x86"
 IUSE="gpm X"
 
-RDEPEND="sys-libs/ncurses
+RDEPEND="sys-libs/ncurses:0=
 	gpm? ( sys-libs/gpm )
 	X? (
 		x11-libs/libX11
@@ -25,10 +25,10 @@ RDEPEND="sys-libs/ncurses
 	)"
 DEPEND="${RDEPEND}"
 
-src_prepare() {
-	epatch "${FILESDIR}"/${P}-flags.patch \
-		"${FILESDIR}"/${P}-desktopfile.patch
-}
+PATCHES=(
+	"${FILESDIR}"/${P}-flags.patch
+	"${FILESDIR}"/${P}-desktopfile.patch
+)
 
 src_configure() {
 	local mycmakeargs=(

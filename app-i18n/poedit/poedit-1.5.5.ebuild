@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
@@ -12,11 +12,11 @@ SRC_URI="mirror://sourceforge/poedit/${P}.tar.gz"
 
 LICENSE="MIT CC-BY-2.5 CC-BY-SA-2.5"
 SLOT="0"
-KEYWORDS="amd64 hppa ppc sparc x86"
+KEYWORDS="amd64 ~hppa ppc sparc x86"
 IUSE="spell"
 
 RDEPEND="dev-libs/boost
-	>=sys-libs/db-4.7
+	>=sys-libs/db-4.7:*
 	x11-libs/wxGTK:2.8[X]
 	spell? ( app-text/gtkspell:2 )"
 

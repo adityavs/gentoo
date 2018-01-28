@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
@@ -18,14 +18,11 @@ RDEPEND="dev-qt/qtsvg:4[debug?]"
 DEPEND="${DEPEND}
 	doc? ( virtual/latex-base )"
 
+PATCHES=( "${FILESDIR}/${P}-gentoo.patch" )
 MASSXPERT_LANGS="fr"
 
-for L in ${MASSXPERT_LANGS}; do
-	IUSE="${IUSE} linguas_${L}"
-done
-
 src_prepare() {
-	epatch "${FILESDIR}/${P}-gentoo.patch"
+	cmake-utils_src_prepare
 
 	local langs=
 	for lingua in ${LINGUAS}; do

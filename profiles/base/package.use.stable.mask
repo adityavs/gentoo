@@ -1,8 +1,42 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 # This file requires eapi 5 or later. New entries go on top.
 # Please use the same syntax as in package.use.mask
+
+# Andrey Grozin <grozin@gentoo.org> (24 Jan 2018)
+# Depends on unstable dev-python/sphinx-gallery.
+# Bug #643840.
+dev-python/matplotlib doc
+
+# Michał Górny <mgorny@gentoo.org> (20 Jan 2018)
+# Requires proprietary fetch-restricted package that is not suitable
+# for stabilization. Bug #645092.
+net-proxy/haproxy device-atlas
+
+# Bernard Cafarelli <voyageur@gentoo.org> (27 Nov 2017)
+# Dependencies have no stable keyword
+app-backup/backup-manager s3
+
+# Brian Evans <grknight@gentoo.org (6 Nov 2017)
+# Requires stable phpunit
+dev-php/PEAR-Text_Password test
+
+# Andreas Sturmlechner <asturm@gentoo.org> (22 Oct 2017)
+# Requires unmaintained unstable dependency net-libs/gloox.
+# The go flag requires stable masked dev-lang/go[gccgo].
+www-servers/uwsgi go pypy uwsgi_plugins_alarm_xmpp
+
+# Andreas Sturmlechner <asturm@gentoo.org> (11 Oct 2017)
+# Requires unstable dependency dev-qt/qtspeech.
+kde-apps/kanagram speech
+kde-apps/kdepim-runtime speech
+kde-apps/konqueror speech
+kde-apps/kpimtextedit speech
+kde-apps/ktp-text-ui speech
+kde-apps/okular speech
+kde-frameworks/knotifications speech
+kde-frameworks/ktextwidgets speech
 
 # Michael Palimaka <kensington@gentoo.org> (30 Sep 2017)
 # Required dependeny is not stable
@@ -12,19 +46,6 @@ sci-libs/gdal mdb
 # Requires guile-2 which is still unstable.
 >=net-irc/weechat-1.7 guile
 
-# James Le Cuirot <chewi@gentoo.org> (27 Aug 2017)
-# Masked for testing.
-media-video/ffmpeg chromium
-www-client/opera system-ffmpeg
-www-client/opera-beta system-ffmpeg
-www-client/opera-developer system-ffmpeg
-www-client/vivaldi system-ffmpeg
-www-client/vivaldi-snapshot system-ffmpeg
-
-# Andreas Sturmlechner <asturm@gentoo.org> (17 Aug 2017)
-# Unstable dependencies.
-kde-apps/kopete cryptography
-
 # Andreas Sturmlechner <asturm@gentoo.org> (12 Aug 2017)
 # Not operational, bug #619534
 >=kde-apps/cantor-17.04.3 R
@@ -32,10 +53,6 @@ kde-apps/kopete cryptography
 # Michael Palimaka <kensington@gentoo.org) (11 Aug 2017)
 # Unstable dependencies.
 dev-util/rpmdevtools emacs
-
-# Andreas Sturmlechner <asturm@gentoo.org> (06 Aug 2017)
-# Requires dev-lang/python-3.5 stabilisation
->=kde-apps/kdegames-meta-17.04.3 python
 
 # Patrick McLean <chutzpah@gentoo.org> (11 Jul 2017)
 # Requires >=net-dns/libidn2-2.0 stabilization
@@ -98,12 +115,6 @@ dev-lang/rust system-llvm
 # Will always require unstable packages.
 net-libs/gnutls test-full
 
-# Zac Medico <zmedico@gentoo.org> (19 Dec 2016)
-# The go flag requires dev-lang/go[gccgo], and gccgo
-# is stable masked since it requires gcc-5 which is
-# currently unstable.
-www-servers/uwsgi go pypy
-
 # Lars Wendler <polynomial-c@gentoo.org> (15 Dev 2016)
 # Requires php:7.0 and ruby:2.2 being stable
 >=dev-libs/Ice-3.6.3 php ruby
@@ -129,17 +140,12 @@ app-emulation/ganeti monitoring
 
 # Mike Gilbert <floppym@gentoo.org> (03 Oct 2015)
 # Unmask stable-masked implementations for python-exec
-dev-lang/python-exec -python_targets_python3_5
 dev-lang/python-exec -python_targets_python3_6
 
 # Pacho Ramos <pacho@gentoo.org> (15 May 2015)
 # Version compatible with current ffmpeg is not ready to be stabilized
 # bug #539212
 app-emulation/vice ffmpeg
-
-# Pacho Ramos <pacho@gentoo.org> (13 May 2015)
-# texinfo-5 cannot be stabilized yet
-=dev-lang/gnat-gcc-4.6* doc
 
 # Jeroen Roovers <jer@gentoo.org> (26 Apr 2015)
 # mongodb support is nice, but dev-libs/mongo-c-driver upstream is not ready
@@ -170,7 +176,7 @@ media-libs/opencv vtk
 
 # Mikle Kolyada <zlogene@gentoo.org> (16 Aug 2014)
 # Not yet stabilized dependency, need more testing
->=dev-perl/PDL-2.4.11 pdl2 pgplot plplot
+>=dev-perl/PDL-2.4.11 pdl2 pgplot
 
 # Samuli Suominen <ssuominen@gentoo.org> (01 Aug 2014)
 # Optional (not required by anything in gentoo-x86) and fragile (based on

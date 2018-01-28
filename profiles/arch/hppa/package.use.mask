@@ -4,6 +4,10 @@
 # NOTE: When masking a USE flag due to missing keywords, please file a keyword
 # request bug for the hppa arch.
 
+# Andreas K. Hüttel <dilfridge@gentoo.org> (4 Oct 2017)
+# -fstack-protector is not supported for hppa, bug 630702
+>=sys-devel/gcc-6.0 ssp
+
 # Michael Palimaka <kensington@gentoo.org> (30 Sep 2017)
 # Required dependencies are not keyworded.
 x11-themes/qtcurve plasma
@@ -41,10 +45,6 @@ dev-vcs/git pcre-jit
 # app-misc/dtach is not keyworded, and tests are restricted anyway, so
 # no point in pursuing it right now.
 app-shells/bash-completion test
-
-# Jeroen Roovers <jer@gentoo.org> (26 Feb 2017)
-# app-crypt/libsecret is not keyworded for HPPA
-dev-vcs/git libsecret
 
 # Jeroen Roovers <jer@gentoo.org> (4 Feb 2017)
 # media-libs/libilbc has not been ported to HPPA
@@ -214,7 +214,6 @@ net-im/pidgin gstreamer
 x11-misc/xscreensaver gdm new-login
 x11-libs/wxGTK gstreamer
 net-p2p/mldonkey guionly gtk
-dev-vcs/git gtk
 net-im/pidgin eds
 
 # Jeroen Roovers <jer@gentoo.org> (15 Apr 2008)

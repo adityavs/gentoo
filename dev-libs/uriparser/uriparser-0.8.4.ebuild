@@ -1,7 +1,9 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
+
+inherit epatch autotools
 
 DESCRIPTION="Uriparser is a strictly RFC 3986 compliant URI parsing library in C"
 HOMEPAGE="http://uriparser.sourceforge.net/"
@@ -9,7 +11,7 @@ SRC_URI="mirror://sourceforge/${PN}/${P}.tar.bz2"
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~amd64-linux ~x86-linux ~ppc-macos ~x86-macos ~x86-solaris"
+KEYWORDS="~amd64 ~arm ~ppc ~ppc64 ~x86 ~amd64-linux ~x86-linux ~ppc-macos ~x86-macos ~x86-solaris"
 IUSE="doc qt4 test unicode"
 
 RDEPEND=""
@@ -19,6 +21,14 @@ DEPEND="virtual/pkgconfig
 	test? ( >=dev-util/cpptest-1.1.1 )"
 
 REQUIRED_USE="test? ( unicode )"
+
+PATCHES=( "${FILESDIR}"/${P}-doc-install.patch )
+
+src_prepare() {
+	epatch "${PATCHES[@]}"
+	epatch_user
+	eautoreconf
+}
 
 src_configure() {
 	econf \

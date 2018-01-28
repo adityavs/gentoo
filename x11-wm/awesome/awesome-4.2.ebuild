@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
@@ -11,7 +11,7 @@ SRC_URI="https://github.com/awesomeWM/awesome-releases/raw/master/${P}.tar.xz"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="~amd64 ~arm ~x86"
 IUSE="dbus doc elibc_FreeBSD gnome luajit"
 
 RDEPEND="
@@ -33,7 +33,7 @@ RDEPEND="
 	x11-libs/libxkbcommon[X]
 	>=x11-libs/libX11-1.3.99.901
 	dbus? ( >=sys-apps/dbus-1 )
-	elibc_FreeBSD? ( dev-libs/libexecinfo )"
+	elibc_FreeBSD? ( || ( dev-libs/libexecinfo >=sys-freebsd/freebsd-lib-10.0 ) )"
 
 # graphicsmagick's 'convert -channel' has no Alpha support, bug #352282
 DEPEND="${RDEPEND}

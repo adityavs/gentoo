@@ -1,9 +1,9 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="5"
 
-inherit eutils flag-o-matic toolchain-funcs multilib-minimal multiprocessing
+inherit eutils flag-o-matic toolchain-funcs multilib-minimal
 
 MY_PV=${PV:0:3}
 PV_SNAP=${PV:4}
@@ -15,7 +15,7 @@ SRC_URI="mirror://gnu/ncurses/${MY_P}.tar.gz"
 LICENSE="MIT"
 # The subslot reflects the SONAME.
 SLOT="0/6"
-KEYWORDS="alpha amd64 arm arm64 hppa ia64 m68k ~mips ppc ppc64 s390 sh sparc x86 ~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
+KEYWORDS="alpha amd64 arm arm64 hppa ia64 m68k ~mips ppc ppc64 s390 sh sparc x86 ~amd64-fbsd ~x86-fbsd"
 IUSE="ada +cxx debug doc gpm minimal profile static-libs test threads tinfo trace unicode"
 
 DEPEND="gpm? ( sys-libs/gpm[${MULTILIB_USEDEP}] )"
@@ -61,8 +61,6 @@ src_configure() {
 		$(use unicode && usex threads 'ncursestw' '')
 	)
 
-	multijob_init
-
 	# When installing ncurses, we have to use a compatible version of tic.
 	# This comes up when cross-compiling, doing multilib builds, upgrading,
 	# or installing for the first time.  Build a local copy of tic whenever
@@ -87,16 +85,15 @@ src_configure() {
 		CXXFLAGS=${BUILD_CXXFLAGS} \
 		CPPFLAGS=${BUILD_CPPFLAGS} \
 		LDFLAGS="${BUILD_LDFLAGS} ${lbuildflags}" \
-		multijob_child_init do_configure cross --without-shared --with-normal
+		do_configure cross --without-shared --with-normal
 	fi
 	multilib-minimal_src_configure
-	multijob_finish
 }
 
 multilib_src_configure() {
 	local t
 	for t in "${NCURSES_TARGETS[@]}" ; do
-		multijob_child_init do_configure "${t}"
+		do_configure "${t}"
 	done
 }
 

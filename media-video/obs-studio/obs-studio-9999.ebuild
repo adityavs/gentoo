@@ -3,6 +3,8 @@
 
 EAPI=6
 
+CMAKE_MIN_VERSION=3.9.6
+
 inherit cmake-utils gnome2-utils
 
 if [[ ${PV} == *9999 ]]; then
@@ -21,7 +23,7 @@ LICENSE="GPL-2"
 SLOT="0"
 IUSE="+alsa fdk imagemagick jack pulseaudio truetype v4l"
 
-DEPEND="
+COMMON_DEPEND="
 	>=dev-libs/jansson-2.5
 	dev-qt/qtcore:5
 	dev-qt/qtdeclarative:5
@@ -49,7 +51,8 @@ DEPEND="
 	)
 	v4l? ( media-libs/libv4l )
 "
-RDEPEND="${DEPEND}"
+DEPEND="${COMMON_DEPEND}"
+RDEPEND="${COMMON_DEPEND}"
 
 CMAKE_REMOVE_MODULES_LIST=( FindFreetype )
 
